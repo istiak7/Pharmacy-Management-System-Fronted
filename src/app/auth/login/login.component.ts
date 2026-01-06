@@ -13,7 +13,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class LoginComponent {
   formData = {
-    email: '',
+    identifier: '',
     password: ''
   };
 
@@ -38,14 +38,16 @@ export class LoginComponent {
     this.authService.login(this.formData).subscribe({
       next: (response) => {
         this.isLoading = false;
-        if (response.isSuccess) {
+        if (response && response.accessToken) {
+          // Store username for display
+          localStorage.setItem('username', response.username || 'User');
           this.showMessage('Login successful! Redirecting...', false);
-          // Navigate to dashboard or home
+          // Navigate to home page
           setTimeout(() => {
-            this.router.navigate(['/']);
+            this.router.navigate(['/home']);
           }, 1000);
         } else {
-          this.showMessage(response.message || 'Login failed', true);
+          this.showMessage('Login failed', true);
         }
       },
       error: (error) => {
@@ -56,12 +58,12 @@ export class LoginComponent {
   }
 
   private validateForm(): boolean {
-    if (!this.formData.email.trim()) {
+    if (!this.formData.identifier.trim()) {
       this.showMessage('Email is required', true);
       return false;
     }
 
-    if (!this.isValidEmail(this.formData.email)) {
+    if (!this.isValidEmail(this.formData.identifier)) {
       this.showMessage('Please enter a valid email address', true);
       return false;
     }

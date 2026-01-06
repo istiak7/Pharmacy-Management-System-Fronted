@@ -16,23 +16,31 @@ export interface VerifyOtpRequest {
 }
 
 export interface RegisterRequest {
+  roleId: number;
+  username: string;
   email: string;
   password: string;
-  confirmPassword: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
 }
 
 export interface LoginRequest {
-  email: string;
+  identifier: string;
   password: string;
 }
 
 export interface AuthToken {
+  id: number;
+  email: string;
+  username: string;
   accessToken: string;
   refreshToken: string;
-  expiresIn: number;
+}
+
+export interface UserResponse {
+  id: number;
+  email: string;
+  username: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface RefreshTokenRequest {
@@ -61,16 +69,16 @@ export class AuthService {
   }
 
   // Register new user
-  register(request: RegisterRequest): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(`${this.baseUrl}/User/registration`, request);
+  register(request: RegisterRequest): Observable<UserResponse> {
+    return this.http.post<UserResponse>(`${this.baseUrl}/User/registration`, request);
   }
 
   // Login
-  login(request: LoginRequest): Observable<ApiResponse<AuthToken>> {
-    return this.http.post<ApiResponse<AuthToken>>(`${this.baseUrl}/User/login`, request).pipe(
+  login(request: LoginRequest): Observable<AuthToken> {
+    return this.http.post<AuthToken>(`${this.baseUrl}/User/login`, request).pipe(
       tap(response => {
-        if (response.isSuccess && response.data) {
-          this.storeTokens(response.data);
+        if (response && response.accessToken) {
+          this.storeTokens(response);
           this.isAuthenticatedSubject.next(true);
         }
       })
@@ -109,6 +117,7 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('username');
     this.isAuthenticatedSubject.next(false);
   }
 

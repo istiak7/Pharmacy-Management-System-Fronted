@@ -13,12 +13,11 @@ import { AuthService } from '../../services/auth.service';
 })
 export class RegisterComponent implements OnInit {
   formData = {
+    roleId: 2, // Default role (e.g., 2 = User, 1 = Admin)
+    username: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    phoneNumber: ''
+    confirmPassword: '' // For frontend validation only
   };
 
   isLoading: boolean = false;
@@ -51,10 +50,19 @@ export class RegisterComponent implements OnInit {
     this.isLoading = true;
     this.message = '';
 
-    this.authService.register(this.formData).subscribe({
+    // Send only the fields required by the API (exclude confirmPassword)
+    const registerData = {
+      roleId: this.formData.roleId,
+      username: this.formData.username,
+      email: this.formData.email,
+      password: this.formData.password
+    };
+
+    this.authService.register(registerData).subscribe({
       next: (response) => {
         this.isLoading = false;
-        if (response.isSuccess) {
+        // Check if response has user data (id and accessToken)
+        if (response && response.id && response.accessToken) {
           this.showMessage('Registration successful! Redirecting to login...', false);
           // Clear session storage
           sessionStorage.removeItem('otpEmail');
@@ -64,7 +72,7 @@ export class RegisterComponent implements OnInit {
             this.router.navigate(['/auth/login']);
           }, 2000);
         } else {
-          this.showMessage(response.message || 'Registration failed', true);
+          this.showMessage('Registration failed', true);
         }
       },
       error: (error) => {
@@ -75,13 +83,8 @@ export class RegisterComponent implements OnInit {
   }
 
   private validateForm(): boolean {
-    if (!this.formData.firstName.trim()) {
-      this.showMessage('First name is required', true);
-      return false;
-    }
-
-    if (!this.formData.lastName.trim()) {
-      this.showMessage('Last name is required', true);
+    if (!this.formData.username.trim()) {
+      this.showMessage('Username is required', true);
       return false;
     }
 

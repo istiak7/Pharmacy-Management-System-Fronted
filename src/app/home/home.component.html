@@ -1,0 +1,41 @@
+<div class="home-container">
+  <header class="header">
+    <div class="logo">
+      <h1>🏥 Pharmacy Management</h1>
+    </div>
+    <div class="user-section">
+      <span class="welcome-text">Welcome, {{ username }}</span>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="dashboard-card">
+      <h2>Dashboard</h2>
+      <p>Welcome to the Pharmacy Management System</p>
+    </div>
+
+    <div class="quick-actions">
+      <div class="action-card">
+        <span class="icon">💊</span>
+        <h3>Medicines</h3>
+        <p>Manage inventory</p>
+      </div>
+      <div class="action-card">
+        <span class="icon">📋</span>
+        <h3>Orders</h3>
+        <p>View orders</p>
+      </div>
+      <div class="action-card">
+        <span class="icon">👥</span>
+        <h3>Customers</h3>
+        <p>Manage customers</p>
+      </div>
+      <div class="action-card">
+        <span class="icon">📊</span>
+        <h3>Reports</h3>
+        <p>View reports</p>
+      </div>
+    </div>
+  </main>
+</div>
