@@ -121,6 +121,7 @@ export class AuthService {
     this.isAuthenticatedSubject.next(false);
   }
 
+  
   // Check if authenticated
   isAuthenticated(): boolean {
     return this.hasToken();
