@@ -19,8 +19,15 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
-   // CALL YOUR TEST API
+  // CALL YOUR TEST API
   getTest(): Observable<ApiResponse<string>> {
     return this.http.get<ApiResponse<string>>(`${this.baseUrl}/Test`);
+  }
+
+  // Test MiniExcel API - to check Bearer token in header
+  getMiniExcelReport(): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/Test/miniexcel`, {
+      responseType: 'blob'
+    });
   }
 }

@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Observable, BehaviorSubject } from 'rxjs';
@@ -52,11 +53,19 @@ export interface RefreshTokenRequest {
 })
 export class AuthService {
   private baseUrl = environment.apiUrl;
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
+  private platformId = inject(PLATFORM_ID);
+  private isAuthenticatedSubject: BehaviorSubject<boolean>;
 
-  isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
+  isAuthenticated$;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
+    this.isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
+  }
+
+  private isBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
+  }
 
   // Send OTP to email
   sendOtp(request: SendOtpRequest): Observable<ApiResponse<any>> {
@@ -87,7 +96,7 @@ export class AuthService {
 
   // Refresh Token
   refreshToken(): Observable<ApiResponse<AuthToken>> {
-    const refreshToken = localStorage.getItem('refreshToken');
+    const refreshToken = this.isBrowser() ? localStorage.getItem('refreshToken') : null;
     return this.http.post<ApiResponse<AuthToken>>(`${this.baseUrl}/User/refresh-token`, { refreshToken }).pipe(
       tap(response => {
         if (response.isSuccess && response.data) {
@@ -99,25 +108,29 @@ export class AuthService {
 
   // Store tokens in localStorage
   private storeTokens(tokens: AuthToken): void {
-    localStorage.setItem('accessToken', tokens.accessToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
+    if (this.isBrowser()) {
+      localStorage.setItem('accessToken', tokens.accessToken);
+      localStorage.setItem('refreshToken', tokens.refreshToken);
+    }
   }
 
   // Check if user has token
   private hasToken(): boolean {
-    return !!localStorage.getItem('accessToken');
+    return this.isBrowser() && !!localStorage.getItem('accessToken');
   }
 
   // Get access token
   getAccessToken(): string | null {
-    return localStorage.getItem('accessToken');
+    return this.isBrowser() ? localStorage.getItem('accessToken') : null;
   }
 
   // Logout
   logout(): void {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('username');
+    if (this.isBrowser()) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('username');
+    }
     this.isAuthenticatedSubject.next(false);
   }
 
